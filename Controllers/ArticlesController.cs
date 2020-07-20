@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Back_Wiki;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Back_Wiki.Controllers
 {
@@ -20,16 +21,15 @@ namespace Back_Wiki.Controllers
             _context = context;
         }
 
-        // GET: api/Articles
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Articles>>> GetArticles()
+        public async Task<ActionResult<IEnumerable<Article>>> GetArticles( string title)
         {
-            return await _context.Articles.ToListAsync();
+            var result = await _context.Articles.Where(article => title == null || article.title.ToLower().Contains(title.Trim().ToLower())).ToListAsync();
+            return result;
         }
 
-        // GET: api/Articles/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Articles>> GetArticles(long id)
+        public async Task<ActionResult<Article>> GetArticles(long id)
         {
             var articles = await _context.Articles.FindAsync(id);
 
@@ -41,11 +41,8 @@ namespace Back_Wiki.Controllers
             return articles;
         }
 
-        // PUT: api/Articles/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutArticles(long id, Articles articles)
+        public async Task<IActionResult> PutArticles(long id, Article articles)
         {
             if (id != articles.Id)
             {
@@ -55,7 +52,7 @@ namespace Back_Wiki.Controllers
             _context.Entry(articles).State = EntityState.Modified;
 
             try
-            {
+            {   
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -72,22 +69,24 @@ namespace Back_Wiki.Controllers
 
             return NoContent();
         }
-
-        // POST: api/Articles
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for
-        // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
+   
         [HttpPost]
-        public async Task<ActionResult<Articles>> PostArticles(Articles articles)
+        public async Task<ActionResult<Article>> PostArticles(Article articles)
         {
-            _context.Articles.Add(articles);
+            var art = new Article
+            {
+               title = articles.title,
+               snippet =  articles.snippet,
+               pageId = articles.pageId
+            };
+            _context.Articles.Add(art);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetArticles", new { id = articles.Id }, articles);
+            return CreatedAtAction("GetArticles", new { id = art.Id }, art);
         }
 
-        // DELETE: api/Articles/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Articles>> DeleteArticles(long id)
+        public async Task<ActionResult<Article>> DeleteArticles(long id)
         {
             var articles = await _context.Articles.FindAsync(id);
             if (articles == null)

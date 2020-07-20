@@ -8,15 +8,17 @@ namespace Back_Wiki
 {
     public class DbInteractor : DbContext
     {
+        internal IEnumerable<object> Atricle;
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder
             .UseSqlite(@"Data Source = Articles.db;");
         }
-        public DbSet<Articles> Articles { get; set; }
+        public DbSet<Article> Articles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Articles>().HasKey(m => m.Id);
+            modelBuilder.Entity<Article>().ToTable("Articles");
         }
     }
     
